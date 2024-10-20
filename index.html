@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://wx.cheemao.com/mao.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="https://wx.cheemao.com/mao.ico" type="image/x-icon">
+    <title>智恒 - 公众号专用编辑器</title>
+    <style>
+        body, html {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #f0f2f5;
+            color: #000;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            box-sizing: border-box;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            text-align: center;
+            color: #000;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .flex-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: calc(100% - 60px);
+        }
+        .box {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 10px;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .buttons-container {
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        textarea, #preview {
+            width: auto;
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #000;
+            resize: none;
+            overflow: auto;
+        }
+        #preview {
+            min-width: 300px;
+            overflow-x: auto;
+        }
+        #preview img {
+            max-width: 100%;
+            height: auto;
+        }
+        button, .file-label {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+        button:hover, .file-label:hover {
+            background-color: #40a9ff;
+        }
+        h3 {
+            margin-bottom: 10px;
+            color: #000;
+            font-size: 18px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        #imageModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #imageGallery {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #imageGallery img {
+            max-width: 200px;
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .save-button {
+            margin-top: 5px;
+        }
+        .fullscreen-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .fullscreen-image img {
+            max-width: 90%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        .fullscreen-image .instructions {
+            color: white;
+            margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .share-button {
+            background-color: #4CAF50;
+            margin-top: 10px;
+        }
+        #fileNameContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        #fileNameDisplay {
+            margin-bottom: 10px;
+        }
+        #copyFeedback {
+            color: green;
+            margin-left: 10px;
+            display: none;
+        }
+        .modal-section {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .modal-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        @media (min-width: 768px) {
+            .container {
+                max-width: 1400px;
+                padding: 20px;
+            }
+            .flex-container {
+                flex-direction: row;
+            }
+            h1 {
+                font-size: 28px;
+            }
+            button, .file-label {
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>智恒 - 公众号专用编辑器</h1>
+        
+        <div class="flex-container">
+            <div class="box">
+                <h3>原文本：</h3>
+                <div class="buttons-container">
+                    <button id="tutorialButton" onclick="openTutorial()">小绿书使用教程</button>
+                    <button id="renderHtmlButton" onclick="renderHtml()">还原HTML</button>
+                    <label for="fileInput" class="file-label">导入文件</label>
+                    <input type="file" id="fileInput" accept=".txt, .docx">
+                </div>
+                <textarea id="originalText" placeholder="在这里输入您的文本..."></textarea>
+            </div>
+            <div class="box">
+                <h3>预览：</h3>
+                <div class="buttons-container">
+                    <button onclick="copyPreviewContent()">复制预览内容</button>
+                    <button onclick="getImages()">获取封面和标题</button>
+                    <div>
+                        <input type="checkbox" id="clearCheckbox">
+                        <label for="clearCheckbox">复制后清空原文本</label>
+                    </div>
+                </div>
+                <div id="preview" contenteditable="true"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="imageModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-section">
+                <h2>文章标题</h2>
+                <div id="fileNameContainer">
+                    <span id="fileNameDisplay"></span>
+                    <button id="copyFileNameButton">复制标题</button>
+                    <span id="copyFeedback">已复制！</span>
+                </div>
+            </div>
+            <div class="modal-section">
+                <h2>封面图片</h2>
+                <p>长按图片可保存到相册</p>
+                <div id="imageGallery"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="fullscreenImage" class="fullscreen-image" style="display: none;">
+        <img id="fullscreenImg" src="" alt="Full screen image">
+        <p class="instructions">长按图片可保存到相册</p>
+        <button id="shareButton" class="share-button">分享图片</button>
+    </div>
+
+    <script>
+        const originalText = document.getElementById('originalText');
+        const preview = document.getElementById('preview');
+        const fileInput = document.getElementById('fileInput');
+        let fileName = '';
+
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                fileName = file.name.replace(/\.[^/.]+$/, "");  // 保存文件名并删除后缀
+                const reader = new FileReader();
+                if (file.type === "text/plain") {
+                    reader.onload = () => {
+                        originalText.value = reader.result;
+                        convertToHtml();
+                    };
+                    reader.readAsText(file);
+                } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const text = await extractTextFromWord(arrayBuffer);
+                    originalText.value = text;
+                    convertToHtml();
+                }
+            }
+        });
+
+        async function extractTextFromWord(arrayBuffer) {
+            const doc = await window.docxPreview(arrayBuffer);
+            return doc.getFullText();
+        }
+
+        function convertPunctuation(text) {
+            const punctuationMap = {
+                ',': '，',
+                '.': '。',
+                '?': '？',
+                '!': '！',
+                ':': '：',
+                ';': '；',
+                '(': '（',
+                ')': '）',
+                '[': '【',
+                ']': '】',
+                '{': '｛',
+                '}': '｝'
+            };
+            
+            let quoteCount = 0;
+            
+            return text.replace(/[,.?!:;()\[\]{}]|"|'/g, match => {
+                if (match === '"' || match === "'") {
+                    quoteCount++;
+                    return quoteCount % 2 === 1 ? '"' : '"';
+                }
+                return punctuationMap[match] || match;
+            });
+        }
+
+        function convertToHtml() {
+            const text = originalText.value;
+            const convertedText = convertPunctuation(text);
+            const html = convertedText.replace(/\n/g, '<br>')
+                             .replace(/\*/g, '')
+                             .replace(/#([^#\n]+)/g, '<span style="color: #000; font-weight: bold;">#$1</span>')
+                             .replace(/🌙|✨|😍|🎉|💖|👍|🛒/g, match => `<span style="font-size: 1.2em;">${match}</span>`);
+            
+            preview.innerHTML = html;
+        }
+
+        function copyPreviewContent() {
+            const range = document.createRange();
+            range.selectNodeContents(preview);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                if (clearCheckbox.checked) {
+                    originalText.value = '';
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
+            }
+            
+            selection.removeAllRanges();
+        }
+
+        const savedCheckboxState = localStorage.getItem('clearCheckboxState');
+        clearCheckbox.checked = savedCheckboxState === 'true';
+
+        clearCheckbox.addEventListener('change', function() {
+            localStorage.setItem('clearCheckboxState', this.checked);
+        });
+        
+        function openTutorial() {
+            const tutorialImageUrl = './image/jc.png';
+            window.open(tutorialImageUrl, '_blank');
+        }
+		
+		function renderHtml() {
+            const text = originalText.value;
+            
+            const processedText = text.replace(/<\/p>\s*<br\s*\/?>/g, '</p><p style="margin-bottom:0px;"><br/></p>');
+            
+            preview.innerHTML = processedText;
+            
+            preview.style.fontSize = '17px';
+            preview.style.lineHeight = '1.5';
+            
+            const elements = preview.getElementsByTagName('*');
+            for (let i = 0; i < elements.length; i++) {
+                const element = elements[i];
+                const computedStyle = window.getComputedStyle(element);
+                
+                if (computedStyle.fontSize === preview.style.fontSize) {
+                    element.style.fontSize = '17px';
+                }
+                
+                if (element.tagName.toLowerCase() === 'p') {
+                    if (!element.style.marginBottom) {
+                        element.style.margin = '0';
+                        element.style.padding = '0';
+                    }
+                }
+                
+                if (element.tagName.toLowerCase() === 'img') {
+                    element.style.maxWidth = '100%';
+                    element.style.height = 'auto';
+                }
+                
+                element.style.maxWidth = '100%';
+                element.style.boxSizing = 'border-box';
+                
+                element.style.width = '';
+                element.removeAttribute('data-width');
+            }
+
+            const sections = preview.querySelectorAll('section');
+            sections.forEach(section => {
+                if (section.style.display === 'inline-block') {
+                    section.style.display = 'block';
+                }
+            });
+        }
+
+        function getImages() {
+            const images = preview.querySelectorAll('img');
+            const imageGallery = document.getElementById('imageGallery');
+            imageGallery.innerHTML = '';
+
+            if (images.length === 0) {
+                alert('预览中没有找到图片。');
+                return;
+            }
+
+            // 显示文件名称和复制按钮
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const copyFileNameButton = document.getElementById('copyFileNameButton');
+            const copyFeedback = document.getElementById('copyFeedback');
+
+            // 检查文件名是否为空
+            if (fileName === '') {
+                fileName = '未命名文件';
+            }
+
+            fileNameDisplay.textContent = `标题: ${fileName}`;
+
+            function copyToClipboard(text) {
+                // 首先尝试使用 Clipboard API
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    return navigator.clipboard.writeText(text)
+                        .then(() => true)
+                        .catch(() => false);
+                }
+
+                // 如果 Clipboard API 不可用，使用传统方法
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                let successful = false;
+                try {
+                    successful = document.execCommand('copy');
+                } catch (err) {
+                    console.error('无法复制文本: ', err);
+                }
+                document.body.removeChild(textArea);
+                return Promise.resolve(successful);
+            }
+
+            copyFileNameButton.onclick = () => {
+                copyToClipboard(fileName).then((successful) => {
+                    if (successful) {
+                        copyFeedback.textContent = '已复制！';
+                        copyFeedback.style.display = 'inline';
+                        setTimeout(() => {
+                            copyFeedback.style.display = 'none';
+                        }, 2000);
+                    } else {
+                        alert('复制失败，请手动复制文件名。');
+                    }
+                });
+            };
+
+            images.forEach((img, index) => {
+                const container = document.createElement('div');
+                container.className = 'image-container';
+
+                const imgClone = img.cloneNode();
+                imgClone.style.maxWidth = '200px';
+                imgClone.style.cursor = 'pointer';
+                imgClone.title = '点击查看大图';
+                imgClone.onclick = () => showFullscreenImage(img.src);
+
+                const saveButton = document.createElement('button');
+                saveButton.textContent = '查看大图';
+                saveButton.className = 'save-button';
+                saveButton.onclick = () => showFullscreenImage(img.src);
+
+                container.appendChild(imgClone);
+                container.appendChild(saveButton);
+                imageGallery.appendChild(container);
+            });
+
+            document.getElementById('imageModal').style.display = 'block';
+            
+            // 调整弹窗高度
+            const modalContent = document.querySelector('.modal-content');
+            modalContent.style.maxHeight = '90vh';
+            modalContent.style.overflowY = 'auto';
+        }
+
+        function showFullscreenImage(src) {
+            const fullscreenImage = document.getElementById('fullscreenImage');
+            const fullscreenImg = document.getElementById('fullscreenImg');
+            fullscreenImg.src = src;
+            fullscreenImage.style.display = 'flex';
+
+            fullscreenImage.onclick = function(event) {
+                if (event.target === fullscreenImage) {
+                    fullscreenImage.style.display = 'none';
+                }
+            };
+
+            const shareButton = document.getElementById('shareButton');
+            shareButton.onclick = () => shareImage(src);
+        }
+
+        function shareImage(src) {
+            if (navigator.share) {
+                fetch(src)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+                        navigator.share({
+                            files: [file],
+                            title: '分享图片',
+                            text: '查看这张图片'
+                        }).then(() => console.log('分享成功'))
+                          .catch((error) => console.log('分享失败', error));
+                    });
+            } else {
+                alert('您的设备不支持分享功能，请长按图片保存。');
+            }
+        }
+
+        const modal = document.getElementById('imageModal');
+        const span = document.getElementsByClassName("close")[0];
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        originalText.addEventListener('input', convertToHtml);
+        
+        convertToHtml();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/docx-preview@2.0.0/build/docx-preview.min.js"></script>
+	<a href="https://smalltool.github.io/" style="display:none;">整站下载器</a>
+</body>
+</html>
